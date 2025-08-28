@@ -37,7 +37,7 @@
    </style>
  </head>
  
- <body clasName="text-(--text) font-(--font-sans)">
+ <body class="text-(--text) font-(--font-sans)">
    <div id="root"></div>
  
    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
@@ -53,17 +53,17 @@
             blast: 'text-3xl',
         }
 
-        function Text({ 
+        function Text({     
             as = 'span', 
             variant = 'default',
-            clasName,
+            className,
             children, 
             ...props
         }){
             return React.createElement(
                 as,
                 {
-                    className: `${textVariants[variant]} ${clasName ? className : ''}`,
+                    className: `${textVariants[variant]} ${className ? className : ''}`,
                     ...props
                 },
                 children
@@ -97,11 +97,180 @@
             )
         }
 
+        function Card({ children, className, ...props }){
+                return (
+                    <div className={
+                        `
+                          bg-(--background) shadow-(--shadow)
+                          rounded-2xl
+                          ${className ? className : ''}
+                        `
+                    }>
+                        {children}
+                    </div>
+                )
+        }
+
+        
+
+        function CalculatorDisplay({ operation, result }){
+            return (
+                <div className={
+                    `
+                        flex flex-col gap-2 px-[1.375rem]
+                        cursor-default select-none 
+                    `
+                }>
+                    <Text
+                        as='div'
+                        variant='muted'
+                        className="flex items-center justify-end h-7"
+                    > 
+                        {operation}
+                    </Text>
+                
+                    <div className="flex items-center justify-between h-9">
+                        <Text variant="muted">=</Text>
+                        <Text variant="blast">{result}</Text>
+                    </div>
+                </div>
+            )
+        }
+
+        const buttons = [
+            [
+                { input: "CE" },
+                { input: "C", className: "flex-1 h-16" },
+                { input: "/", variant: "primary" }
+            ],
+            [
+                { input: "7" },
+                { input: "8" },
+                { input: "9" },
+                { input: "*", variant: "primary" },
+            ],
+            [
+                { input: "4" },
+                { input: "5" },
+                { input: "6" },
+                { input: "-", variant: "primary" },
+            ],
+            [
+                { input: "1" },
+                { input: "2" },
+                { input: "3" },
+                { input: "+", variant: "primary" },
+            ],
+            [
+                { input: "0", className: "flex-1 h-16" },
+                { input: "," },
+                { input: "=", className: "w-16 h-16 bg-[#7f45e2]" },
+            ]
+        ]
+
+        function Calculator(){
+            const [operation, setOperation] = React.useState('')
+            const [result, setResult] = React.useState(0)
+
+            function handleButtonClick(value){
+                if(value === 'C' || value === 'CE'){
+                    setOperation('')
+                    setResult(0)
+                    return
+                }
+
+                if(result > 0){
+                    setOperation(`${result} ${value}`)
+                    setResult(0)
+                    return
+                }
+
+                if(value === '='){
+                    const operationResult = eval(operation.replace(',', '.'))
+                    /*
+                    let regex = /[\/\*\+\-]/g
+                    let valuesArray = operation.split(regex)
+                    valuesArray = valuesArray.map(item => item.replace(/\s+/g, "").replace(',', '.'))
+                    console.log(valuesArray)
+
+                    let operatorsArray = operation.match(regex)
+                    if(valuesArray.length === 0) return
+
+                    let result = parseFloat(valuesArray[0])
+                    console.log(result)
+                    for(let i = 0; i < valuesArray.length; i++){
+                        switch(operatorsArray[i]){
+                            case '+':
+                                result += parseFloat(valuesArray[i + 1])
+                                break
+                            case '-':
+                                result -= parseFloat(valuesArray[i + 1])
+                                break
+                            case '*':
+                                result *= parseFloat(valuesArray[i + 1])
+                                break
+                            case '/':
+                                result /= parseFloat(valuesArray[i + 1])
+                                break
+                            default:
+                                break
+                        }
+                    }*/
+                    setResult(operationResult)
+                    return
+                }
+
+                setOperation(`${operation} ${value}`.replace(/\s+/g, "") )
+            }
+
+
+            return (
+                <Card className={
+                    `
+                        flex flex-col gap-[1.625rem] w-[22.25rem]
+                        pt-14 px-8 pb-8
+                    `
+                }> 
+                    <CalculatorDisplay operation={operation} result={result}/>
+                    <div className="flex flex-col gap-3">
+                        {
+                            buttons.map((rows, index) => (
+                                <div key={`row-${index}`} className="flex gap-3">
+                                    {
+                                        rows.map((row, index) => (
+                                                <Button 
+                                                    onClick={()=> handleButtonClick(row.input)}
+                                                key={row.input}
+                                                className={
+                                                    `${row.className ? row.className : "w-16 h-16"}`
+                                                } 
+                                                variant={
+                                                    `${row.variant ? row.variant : ''}`
+                                                }>
+                                                    {row.input}
+                                                </Button>
+                                        ))
+                                    }
+                                </div>       
+                            ))
+                        }
+                    </div>
+                    <div>
+                        <button>
+                            <Text variant="muted" className="text-center">
+                                Powered by Bruno 
+                            </Text>
+                        </button>
+                    </div>
+                </Card>
+            )
+        }
+
+
         function App(){
             return (
                 <main className="py-28 px-4">
-                    <Button> CE </Button>
-
+                    <Calculator />
                 </main>
             )
         }
